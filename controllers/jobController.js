@@ -37,14 +37,153 @@ const createJob = async (req, res) => {
     }
 };
 
+
 const getAllJobs = async (req, res) => {
     try {
-        const jobs = (await Job.find()).toSorted({ createdAt: -1 });
+
+        const { search, company, location, role, skill, sortBy, minSalary, maxSalary } = req.query;
+
+        //filter
+        // =========================
+        // FILTER
+        // =========================
+        const filter = {};
+        //SEARCH
+        if (search) {
+            filter.$or = [
+                { title: { $regex: search, $options: "i" } },
+                { company: { $regex: search, $options: "i" } },
+                { role: { $regex: search, $options: "i" } },
+                { description: { $regex: search, $options: "i" } }
+            ];
+        }
+        //Exact filters
+        if (company) {
+            filter.company = company;
+        }
+        if (location) {
+            filter.location = location;
+        }
+        if (role) {
+            filter.role = role;
+        }
+        if (skill) {
+            filter.skills = skill;
+        }
+
+        //SALARY FILTERs
+        if (minSalary) {
+            const min = Number(minSalary);
+
+            if (!Number.isFinite(min) || min < 0) {
+                return res.status(400).json({
+                    message: "Invalid minimum salary"
+                });
+            }
+
+            filter["salary.max"] = {
+                $gte: min
+            };
+        }
+        if (maxSalary) {
+            const max = Number(maxSalary);
+
+            if (!Number.isFinite(max) || max < 0) {
+                return res.status(400).json({
+                    message: "Invalid maximum salary"
+                });
+            }
+
+            filter["salary.min"] = {
+                $lte: max
+            };
+        }
+
+        if (minSalary && maxSalary) {
+            if (Number(minSalary) > Number(maxSalary)) {
+                return res.status(400).json({
+                    message: "Minimum salary cannot be greater than maximum salary"
+                });
+            }
+        }
+
+        // =========================
+        // SORT
+        // =========================
+        const sort = {};
+        const allowedSorts = ["latest", "oldest", "salaryLow", "salaryHigh"];
+
+        if (sortBy && !allowedSorts.includes(sortBy)) {
+            return res.status(400).json({
+                message: "Invalid sort option"
+            });
+        }
+
+        if (sortBy === "oldest") {
+            sort.createdAt = 1;
+        }
+        else if (sortBy === "salaryLow") {
+            sort["salary.min"] = 1;
+        }
+        else if (sortBy === "salaryHigh") {
+            sort["salary.max"] = -1;
+        }
+        else {
+            sort.createdAt = -1;
+        }
+
+
+        //--> PAGINATION <--
+        // =========================
+        // PAGINATION
+        // =========================
+        const page = req.query.page ? Number(req.query.page) : 1;
+        const limit = req.query.limit ? Number(req.query.limit) : 10;
+        // const page = Number(req.query.page) || 1;
+        // const limit = Number(req.query.limit) || 10;
+
+        if (page < 1 || limit < 1 || limit > 100) {
+            return res.status(400).json({
+                message: "Invalid pagination parameters"
+            });
+        }
+
+        if (!Number.isInteger(page) || !Number.isInteger(limit)) {
+            return res.status(400).json({
+                message: "Page and limit must be numbers"
+            });
+        }
+
+        const skip = (page - 1) * limit;
+
+
+        // =========================
+        // DATABASE QUERY
+        // =========================
+        const [totalJobs, jobs] = await Promise.all([
+            Job.countDocuments(filter),
+            Job.find(filter)
+                .sort(sort)
+                .skip(skip)
+                .limit(limit)
+        ]);
+
+        // const totalJobs = await Job.countDocuments();
+
+        // const jobs = await Job.find()
+        //     .sort({ createdAt: -1 })
+        //     .skip(skip)
+        //     .limit(limit);
+
+        const totalPages = Math.ceil(totalJobs / limit);
 
         return res.status(200).json({
-            count: jobs.length,
-            jobs,
-        })
+            totalJobs,
+            totalPages,
+            currentPage: page,
+            jobs
+        });
+
     }
 
     catch (error) {
@@ -53,6 +192,24 @@ const getAllJobs = async (req, res) => {
         });
     }
 };
+
+
+// const getAllJobs = async (req, res) => {
+//     try {
+//         const jobs = (await Job.find()).toSorted({ createdAt: -1 });
+
+//         return res.status(200).json({
+//             count: jobs.length,
+//             jobs,
+//         })
+//     }
+
+//     catch (error) {
+//         return res.status(500).json({
+//             message: error.message
+//         });
+//     }
+// };
 
 
 const getJobById = async (req, res) => {
@@ -103,12 +260,18 @@ const updateJob = async (req, res) => {
             });
         }
 
+        if (job.createdBy.toString() !== req.user.id.toString()) {
+            return res.status(403).json({
+                message: "You are not allowed to update thi job"
+            })
+        }
+
         const { title, company, location, salary, role, skills,
             eligibility, applyLink, description } = req.body;
 
         const update = {};
 
-        if (title) {
+        if (title !== undefined) {
             update.title = title;
         }
         if (company) {
@@ -163,12 +326,20 @@ const deleteJob = async (req, res) => {
                 message: "Invalid Job ID"
             });
         }
-        const deletedJob = await Job.findByIdAndDelete(id);
+        const deletedJob = await Job.findById(id);
         if (!deletedJob) {
             return res.status(404).json({
                 message: "Job not found"
             })
         }
+        if (deletedJob.createdBy.toString() !== req.user.id.toString()) {
+            return res.status(403).json({
+                message: "You are not allowed to delete this job"
+            });
+        }
+
+        await Job.findByIdAndDelete(id);
+        // const deletedJob = await Job.findByIdAndDelete(id);
         return res.status(200).json({
             message: "Deleted Job Successfully"
         })
