@@ -1,4 +1,4 @@
-const { default: mongoose } = require("mongoose");
+const mongoose = require("mongoose");
 const Application = require("../models/Application.js");
 const Job = require("../models/Job.js");
 
@@ -108,4 +108,64 @@ const getJobApplications = async (req, res) => {
     }
 }
 
-module.exports = { applyJob, getMyApplications, getJobApplications };
+const allowedStatuses = ["Applied", "Shortlisted", "Rejected", "Selected"];
+
+
+const updateApplicationStatus = async (req, res) => {
+
+    try {
+
+        const applicationId = req.params.applicationId;
+
+        const { status } = req.body;
+
+        if (!mongoose.Types.ObjectId.isValid(applicationId)) {
+            return res.status(400).json({
+                message: "Invalid Application ID"
+            });
+        }
+
+        const application = await Application.findById(applicationId);
+        if (!application) {
+            return res.status(404).json({
+                message: "Application not found"
+            })
+        }
+        // const { status } = req.body;
+        if (!allowedStatuses.includes(status)) {
+            return res.status(400).json({
+                message: "Invalid application status"
+            });
+        }
+
+        const job = await Job.findById(application.job);
+
+        if (!job) {
+            return res.status(404).json({
+                message: "Job not found"
+            });
+        }
+
+        if (job.createdBy.toString() !== req.user.id.toString()) {
+            return res.status(403).json({
+                message: "You are not allowed to update this application"
+            })
+        }
+
+        application.status = status;
+        await application.save();
+
+        //await Application.findByIdAndUpdate(applicationId, {status}, {new: true});
+
+        return res.status(200).json({
+            message: "Updated status successfully"
+        })
+
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message
+        });
+    }
+}
+
+module.exports = { applyJob, getMyApplications, getJobApplications, updateApplicationStatus };
