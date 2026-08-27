@@ -138,8 +138,41 @@ const deleteAccount = async (req, res) => {
     }
 };
 
+const uploadResume = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                message: "Resume is required"
+            });
+        }
+
+        const user = await User.findById(req.user.id);
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
+
+        user.resume = req.file.path;
+
+        await user.save();
+
+        return res.status(200).json({
+            message: "Resume uploaded successfully",
+            resume: user.resume
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message
+        });
+    }
+};
+
 module.exports = {
     getProfile, updateProfile,
     changePassword,
-    deleteAccount
+    deleteAccount,
+    uploadResume
 };
