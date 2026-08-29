@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const Job = require("../models/Job.js");
-
+const User = require("../models/User.js")
 
 
 const createJob = async (req, res) => {
@@ -351,4 +351,44 @@ const deleteJob = async (req, res) => {
     }
 };
 
-module.exports = { createJob, getAllJobs, getJobById, updateJob, deleteJob };
+const getRecommendedJobs = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+
+        if (!user) {
+            return res.json(404).json({
+                message: "User not found"
+            });
+        }
+
+        const userSkills = (user.skills || []).map(skill => skill.toLocaleLowerCase().trim());
+
+        const jobs = await Job.find();
+
+        const recommendedJobs = jobs.map(job => {
+
+            const jobSkills = (job.skills || []).map(skill => skill.toLocaleLowerCase(skill));
+
+            const matchingSkills = jobSkills.filter(skill => userSkills.includes(skill));
+
+            const matchPercentage = jobSkills.length > 0
+                ? Math.round(
+                    (matchingSkills.length / jobSkills.length) * 100
+                ) : 0;
+
+            return { job, matchingSkills, matchPercentage };
+        });
+
+        recommendedJobs.sort((a, b) => b.matchPercentage - a.matchPercentage);
+
+        return res.status(200).json({
+            jobs: recommendedJobs
+        })
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message
+        });
+    }
+};
+
+module.exports = { createJob, getAllJobs, getJobById, updateJob, deleteJob, getRecommendedJobs };

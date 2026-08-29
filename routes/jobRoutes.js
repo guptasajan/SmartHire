@@ -5,12 +5,15 @@ const auth = require("../middleware/auth.js");
 const admin = require("../middleware/admin.js");
 
 
-const { createJob, getAllJobs, updateJob, deleteJob, getJobById } = require("../controllers/jobController");
+const { createJob, getAllJobs, updateJob, deleteJob, getJobById, getRecommendedJobs } = require("../controllers/jobController");
 
 
 router.get("/", getAllJobs);
 
 router.post("/", auth, admin, createJob);
+
+//recommended jobs
+router.get("/recommended", auth, getRecommendedJobs);
 
 //specific job search
 router.get("/:id", getJobById);
