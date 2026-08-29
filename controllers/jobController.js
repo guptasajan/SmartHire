@@ -361,13 +361,13 @@ const getRecommendedJobs = async (req, res) => {
             });
         }
 
-        const userSkills = (user.skills || []).map(skill => skill.toLocaleLowerCase().trim());
+        const userSkills = (user.skills || []).map(skill => skill.toLowerCase().trim());
 
         const jobs = await Job.find();
 
         const recommendedJobs = jobs.map(job => {
 
-            const jobSkills = (job.skills || []).map(skill => skill.toLocaleLowerCase(skill));
+            const jobSkills = (job.skills || []).map(skill => skill.toLowerCase(skill));
 
             const matchingSkills = jobSkills.filter(skill => userSkills.includes(skill));
 
