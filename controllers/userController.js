@@ -26,7 +26,7 @@ const getProfile = async (req, res) => {
 const updateProfile = async (req, res) => {
     try {
         const id = req.user.id;
-        const { name, email } = req.body;
+        const { name, email, skills } = req.body;
 
         const updates = {};
         if (name) {
@@ -34,6 +34,9 @@ const updateProfile = async (req, res) => {
         }
         if (email) {
             updates.email = email;
+        }
+        if (skills) {
+            updates.skills = skills;
         }
 
         const user = await User.findByIdAndUpdate(

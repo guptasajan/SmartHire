@@ -22,7 +22,10 @@ const userSchema = new mongoose.Schema({
     },
     resume: {
         type: String
-    }
+    },
+    skills: [{
+        type: String
+    }]
 });
 
 const User = mongoose.model("User", userSchema);
