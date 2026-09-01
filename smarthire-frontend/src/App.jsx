@@ -3,6 +3,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Jobs from "./pages/Jobs";
 import Navbar from "./components/Navbar";
+import Profile from "./pages/Profile";
 
 
 
@@ -20,7 +21,7 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/jobs" element={<Jobs />} />
 
-
+        <Route path="/profile" element={<Profile />} />
 
       </Routes>
     </BrowserRouter>
