@@ -4,7 +4,7 @@ import Signup from "./pages/Signup";
 import Jobs from "./pages/Jobs";
 import Navbar from "./components/Navbar";
 import Profile from "./pages/Profile";
-
+import JobDetails from "./pages/JobDetails";
 
 
 function App() {
@@ -22,6 +22,7 @@ function App() {
         <Route path="/jobs" element={<Jobs />} />
 
         <Route path="/profile" element={<Profile />} />
+        <Route path="/jobs/:id" element={<JobDetails />} />
 
       </Routes>
     </BrowserRouter>
