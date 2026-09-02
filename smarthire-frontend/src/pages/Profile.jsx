@@ -6,13 +6,21 @@ function Profile() {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(true);
 
+    const [isEditing, setIsEditing] = useState(false);
+
+    const [formData, setFormData] = useState({
+        name: "",
+        email: "",
+        skills: []
+    });
+
     useEffect(() => {
         getProfile();
     }, []);
 
     const getProfile = async () => {
         try {
-            const response = await api.get("/users/profile");
+            const response = await api.get("/user/profile");
 
             setUser(response.data.user);
 
