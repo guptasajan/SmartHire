@@ -5,7 +5,8 @@ import Jobs from "./pages/Jobs";
 import Navbar from "./components/Navbar";
 import Profile from "./pages/Profile";
 import JobDetails from "./pages/JobDetails";
-
+import MyApplications from "./pages/MyApplications";
+import AdminApplications from "./pages/AdminApplications"
 
 function App() {
   return (
@@ -23,6 +24,8 @@ function App() {
 
         <Route path="/profile" element={<Profile />} />
         <Route path="/jobs/:id" element={<JobDetails />} />
+        <Route path="/my-applications" element={<MyApplications />} />
+        <Route path="/admin/applications" element={<AdminApplications />} />
 
       </Routes>
     </BrowserRouter>

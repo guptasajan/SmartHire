@@ -9,6 +9,8 @@ function JobDetails() {
     const [job, setJob] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [applyMessage, setApplyMessage] = useState("");
+    const [applying, setApplying] = useState(false);
 
     useEffect(() => {
         getJob();
@@ -27,6 +29,26 @@ function JobDetails() {
             setLoading(false);
         }
     };
+
+
+    const handleApply = async () => {
+        setApplying(true);
+        setApplyMessage("");
+
+        try {
+            const response = await api.post(`/applications/${id}`);
+
+            setApplyMessage(response.data.message);
+
+
+        } catch (error) {
+            setApplyMessage(
+                error.response?.data?.message || "Failed to apply"
+            );
+        } finally {
+            setApplying(false);
+        }
+    }
 
     if (loading) {
         return <p>Loading job...</p>;
@@ -62,13 +84,11 @@ function JobDetails() {
 
             <p>{job.description}</p>
 
-            <a
-                href={job.applyLink}
-                target="_blank"
-                rel="noreferrer"
-            >
-                Apply Now
-            </a>
+            <button onClick={handleApply} disabled={applying}>
+                {applying ? "Applying..." : "Apply Now"}
+            </button>
+
+            <p>{applyMessage}</p>
         </div>
     );
 }
