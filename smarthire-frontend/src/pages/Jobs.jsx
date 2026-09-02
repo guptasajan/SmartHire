@@ -7,13 +7,31 @@ function Jobs() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
+    const [search, setSearch] = useState("");
+    const [location, setLocation] = useState("");
+    const [role, setRole] = useState("");
+    const [skill, setSkill] = useState("");
+
     useEffect(() => {
         getJobs();
     }, []);
 
     const getJobs = async () => {
         try {
-            const response = await api.get("/jobs");
+            console.log("Filters:", {
+                search,
+                location,
+                role,
+                skill
+            });
+            const response = await api.get("/jobs", {
+                params: {
+                    search,
+                    location,
+                    role,
+                    skill
+                }
+            });
 
             setJobs(response.data.jobs);
         } catch (error) {
@@ -36,6 +54,38 @@ function Jobs() {
     return (
         <div>
             <h1>Jobs</h1>
+
+            <input
+                type="text"
+                placeholder="Search jobs..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+            />
+
+            <input
+                type="text"
+                placeholder="Location"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+            />
+
+            <input
+                type="text"
+                placeholder="Role"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+            />
+
+            <input
+                type="text"
+                placeholder="Skill"
+                value={skill}
+                onChange={(e) => setSkill(e.target.value)}
+            />
+
+            <button onClick={getJobs}>
+                Search
+            </button>
 
             {jobs.length === 0 ? (
                 <p>No jobs available</p>

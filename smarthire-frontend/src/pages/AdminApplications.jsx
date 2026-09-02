@@ -27,6 +27,22 @@ function AdminApplications() {
         }
     };
 
+    const updateStatus = async (applicationId, status) => {
+        try {
+            await api.patch(
+                `/applications/${applicationId}/status`,
+                { status }
+            );
+
+            getApplications();
+        } catch (error) {
+            setError(
+                error.response?.data?.message ||
+                "Failed to update status"
+            );
+        }
+    };
+
     if (loading) return <p>Loading applications...</p>;
     if (error) return <p>{error}</p>;
 
@@ -46,7 +62,23 @@ function AdminApplications() {
                         <p>Status: {application.status}</p>
 
                         <hr />
+
+                        <select
+                            value={application.status}
+                            onChange={(e) =>
+                                updateStatus(
+                                    application._id,
+                                    e.target.value
+                                )
+                            }
+                        >
+                            <option value="Applied">Applied</option>
+                            <option value="Shortlisted">Shortlisted</option>
+                            <option value="Rejected">Rejected</option>
+                            <option value="Selected">Selected</option>
+                        </select>
                     </div>
+
                 ))
             )}
         </div>
