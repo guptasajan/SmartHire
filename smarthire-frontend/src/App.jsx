@@ -8,8 +8,9 @@ import JobDetails from "./pages/JobDetails";
 import MyApplications from "./pages/MyApplications";
 import AdminApplications from "./pages/AdminApplications"
 import AdminDashboard from "./pages/AdminDashboard";
-
-
+import CreateJob from "./pages/CreateJob";
+import AdminJobs from "./pages/AdminJobs";
+import EditJob from "./pages/EditJob";
 
 function App() {
   return (
@@ -30,7 +31,18 @@ function App() {
         <Route path="/my-applications" element={<MyApplications />} />
         <Route path="/admin/applications" element={<AdminApplications />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
-
+        <Route
+          path="/admin/create-job"
+          element={<CreateJob />}
+        />
+        <Route
+          path="/admin/jobs"
+          element={<AdminJobs />}
+        />
+        <Route
+          path="/admin/edit-job/:id"
+          element={<EditJob />}
+        />
 
       </Routes>
     </BrowserRouter>

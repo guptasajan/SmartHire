@@ -12,8 +12,16 @@ function Jobs() {
     const [role, setRole] = useState("");
     const [skill, setSkill] = useState("");
 
+    // useEffect(() => {
+    //     getJobs();
+    // }, []);
     useEffect(() => {
-        getJobs();
+        getJobs({
+            search: "",
+            location: "",
+            role: "",
+            skill: ""
+        });
     }, []);
 
     const getJobs = async () => {
